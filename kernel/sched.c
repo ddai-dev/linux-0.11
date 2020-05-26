@@ -29,7 +29,7 @@
 // 内核调试函数。显示任务号nr的进程号、进程状态和内核堆栈空闲字节数(大约)
 void show_task(int nr,struct task_struct * p)
 {
-	int i,j = 4096-sizeof(struct task_struct);
+	int i,j = 4096-sizeof(struct task_struct); // 在一页中(4096) - 任务占用结构, 还剩余多少字节
 
 	printk("%d: pid=%d, state=%d, ",nr,p->pid,p->state);
 	i=0;
@@ -50,7 +50,7 @@ void show_stat(void)
 }
 
 // PC机8253定时芯片的输入时钟频率约为1.193180MHz. Linux内核希望定时器发出中断的频率是
-// 100Hz，也即没10ms发出一次时钟中断。因此这里的LATCH是设置8253芯片的初值。
+// 100Hz，也即没10ms发出一次时钟中断。因此这里的LATCH是设置8253芯片的初值。 (系统每 10 毫秒发生一次时钟中断)
 #define LATCH (1193180/HZ)
 
 extern void mem_use(void);      // 没有任何地方定义和引用该函数
@@ -89,11 +89,11 @@ struct task_struct * task[NR_TASKS] = {&(init_task.task), }; // 定义任务指�
 // 户态栈。下面结构用于设置堆栈ss:esp(数据的选择符，指针)。ss被设置为内核数据段
 // 选择符(0x10),指针esp指在user_stack数组最后一项后面。这是因为Intel CPU执行堆栈操作
 // 时是先递减堆栈指针sp值，然后在sp指针处保存入栈内容。
-long user_stack [ PAGE_SIZE>>2 ] ;
+long user_stack [ PAGE_SIZE>>2 ] ; // 相当于  4K/4 = 1K 项. 每个容量为 4byte => 1K * 4byte = 4K 字节
 
 struct {
-	long * a;
-	short b;
+	long * a; // esp
+	short b;  // ss
 	} stack_start = { & user_stack [PAGE_SIZE>>2] , 0x10 };
 /*
  *  'math_state_restore()' saves the current math information in the
@@ -136,7 +136,7 @@ void math_state_restore()
 void schedule(void)
 {
 	int i,next,c;
-	struct task_struct ** p;
+	struct task_struct ** p; // 
 
 /* check alarm, wake up any interruptible tasks that have got a signal */
 
@@ -175,7 +175,7 @@ void schedule(void)
 				c = (*p)->counter, next = i;
 		}
         // 如果比较得出有counter值不等于0的结果，或者系统中没有一个可运行的任务存在(此时c
-        // 仍然为-1，next=0),则退出while(1)_的循环，执行switch任务切换操作。否则就根据每个
+        // 仍然为-1，next=0, 跳出循环, 切换到任务 0 开始运行),则退出while(1)_的循环，执行switch任务切换操作。否则就根据每个
         // 任务的优先权值，更新每一个任务的counter值，然后回到while(1)循环。counter值的计算
         // 方式counter＝counter/2 + priority.注意：这里计算过程不考虑进程的状态。
 		if (c) break;
@@ -190,7 +190,7 @@ void schedule(void)
 }
 
 // 转换当前任务状态为可中断的等待状态，并重新调度。
-// 该系统调用将导致进程进入睡眠状态，知道收到一个信号。该信号用于终止进程或者使进程调用
+// 该系统调用将导致进程进入睡眠状态，直到收到一个信号。该信号用于终止进程或者使进程调用
 // 一个信号捕获函数。只有当捕获了一个信号，并且信号捕获处理函数返回，pause()才会返回。此时
 // pause()返回值应该是-1，并且errno被置为EINTR。这里还没有完全实现(直到0.95版)
 int sys_pause(void)

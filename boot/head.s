@@ -13,10 +13,9 @@
  */
 .text
 .globl idt,gdt,pg_dir,tmp_floppy_area
-pg_dir:
-.globl startup_32
+pg_dir:  # 内核分页机制完成后的内核起始位置
 startup_32:
-	movl $0x10,%eax
+	movl $0x10,%eax # 内核的数据段 
 	mov %ax,%ds
 	mov %ax,%es
 	mov %ax,%fs
@@ -79,11 +78,11 @@ check_x87:
  */
 setup_idt:
 	lea ignore_int,%edx
-	movl $0x00080000,%eax
-	movw %dx,%ax		/* selector = 0x0008 = cs */
-	movw $0x8E00,%dx	/* interrupt gate - dpl=0, present */
+	movl $0x00080000,%eax /* 0x0008 放入 eax 的高 16位, 这行以及下一行构建了中断描述符的低 4 字节 */
+	movw %dx,%ax		/* selector = 0x0008 = cs ax 低 16 放入程序地址, 此时 eax 含有门描述符的低 4 字节的值 */ 
+	movw $0x8E00,%dx	/* interrupt gate - dpl=0, present  参考中断门的结构 构造中断门*/
 
-	lea idt,%edi
+	lea idt,%edi  
 	mov $256,%ecx
 rp_sidt:
 	movl %eax,(%edi)
@@ -202,14 +201,14 @@ setup_paging:
 	xorl %eax,%eax
 	xorl %edi,%edi			/* pg_dir is at 0x000 */
 	cld;rep;stosl
-	movl $pg0+7,pg_dir		/* set present bit/user r/w */
+	movl $pg0+7,pg_dir		/* set present bit/user r/w 每个页目录项存放的是页表的地址 */
 	movl $pg1+7,pg_dir+4		/*  --------- " " --------- */
 	movl $pg2+7,pg_dir+8		/*  --------- " " --------- */
 	movl $pg3+7,pg_dir+12		/*  --------- " " --------- */
-	movl $pg3+4092,%edi
-	movl $0xfff007,%eax		/*  16Mb - 4096 + 7 (r/w user,p) */
-	std
-1:	stosl			/* fill pages backwards - more efficient :-) */
+	movl $pg3+4092,%edi 		/** edi 指向最后一个页表项 */
+	movl $0xfff007,%eax		/*  16Mb - 4096 + 7 (r/w user,p) 最后一个页页表项的物理地址为 0xfff000 16MB 最后一个的起始位置 -*/
+	std						/*方向位 edi的值 - 4 */
+1:	stosl			/* fill pages backwards - more efficient :-) eax 填充 es:edi */
 	subl $0x1000,%eax
 	jge 1b
 	xorl %eax,%eax		/* pg_dir is at 0x0000 */

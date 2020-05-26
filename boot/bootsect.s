@@ -52,14 +52,15 @@ _start:
 	sub	si,si
 	sub	di,di
 	rep
-	movw
+	movw 
 	jmpi	go,INITSEG
-go:	mov	ax,cs
+! 将自己移动到 0x9000 and then jump to 
+go:	mov	ax,cs  ! cs 为 0x9000 (因为 jmpi)
 	mov	ds,ax
 	mov	es,ax
 ! put stack at 0x9ff00.
 	mov	ss,ax
-	mov	sp,#0xFF00		! arbitrary value >>512
+	mov	sp,#0xFF00		! arbitrary value >>512 (0x9000:0xff00) 所以 远大于 512KB
 
 ! load the setup-sectors directly after the bootblock.
 ! Note that 'es' is already set up.

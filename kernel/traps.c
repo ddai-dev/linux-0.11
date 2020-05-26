@@ -72,7 +72,7 @@ void irq13(void);
 
 // 该子程序用来打印出错中断的名称、出错号、调用程序的EIP、EFLAGS、ESP、fs段寄存器值、
 // 段的基址、段的长度、进程号PID、任务号、10字节指令码。如果堆栈在用户数据段，则还
-// 打印16字节的堆栈内容。
+// 打印16字节的堆栈内容。 参考函数调用堆栈图来理解
 static void die(char * str,long esp_ptr,long nr)
 {
 	long * esp = (long *) esp_ptr;

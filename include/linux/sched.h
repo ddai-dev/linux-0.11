@@ -113,19 +113,19 @@ struct task_struct {
  * your own risk!. Base=0, limit=0x9ffff (=640kB)
  */
 #define INIT_TASK \
-/* state etc */	{ 0,15,15, \
-/* signals */	0,{{},},0, \
-/* ec,brk... */	0,0,0,0,0,0, \
-/* pid etc.. */	0,-1,0,0,0, \
-/* uid etc */	0,0,0,0,0,0, \
-/* alarm */	0,0,0,0,0,0, \
-/* math */	0, \
-/* fs info */	-1,0022,NULL,NULL,NULL,0, \
-/* filp */	{NULL,}, \
-	{ \
+/* state etc */	{ 0,15,15, \  /**state, counter, priority */
+/* signals */	0,{{},},0, \  /** signal, sigaction[32], blocked */
+/* ec,brk... */	0,0,0,0,0,0, \ /**exit_code, start_code, end_data, brk, start_stack*/
+/* pid etc.. */	0,-1,0,0,0, \ /** pid, father, pgrp, session, leader*/
+/* uid etc */	0,0,0,0,0,0, \ /** uid, euid, suid, gid, egid, sgid,*/
+/* alarm */	0,0,0,0,0,0, \ /**alerm, utime, stime, cutime, cstime, start_time*/
+/* math */	0, \  			/** used_math*/
+/* fs info */	-1,0022,NULL,NULL,NULL,0, \ // tty, umask, pwd, root, executable, close_on_exec*/
+/* filp */	{NULL,}, \		// filp[20]*/
+	{ \				// ldt[3]*/
 		{0,0}, \
-/* ldt */	{0x9f,0xc0fa00}, \
-		{0x9f,0xc0f200}, \
+/* ldt */	{0x9f,0xc0fa00}, \ // 代码长 640K, 基址 0x0, G=1, D=1, DPL=3, P=1 TYPE=0x0a*/
+		{0x9f,0xc0f200}, \     // 数据长 640K, 基址 0x0, G=1, D=1, DPL=3, P=1 TYPE=0x02*/
 	}, \
 /*tss*/	{0,PAGE_SIZE+(long)&init_task,0x10,0,0,0,0,(long)&pg_dir,\
 	 0,0,0,0,0,0,0,0, \

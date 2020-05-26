@@ -188,7 +188,7 @@ end_move:
 ! absolute address 0x00000, in 32-bit protected mode.
 	mov	ax,#0x0001	! protected mode (PE) bit
 	lmsw	ax		! This is it!
-	jmpi	0,8		! jmp offset 0 of segment 8 (cs)
+	jmpi	0,8		! jmp offset 0 of segment 8 (cs) 0 表示偏移地址， 8 选择子, 0x1000 所以是1个描述符(代码段)
 
 ! This routine checks that the keyboard command queue is empty
 ! No timeout is used - if this hangs there is something wrong with
@@ -212,14 +212,14 @@ gdt:
 	.word	0x0000		! base address=0
 	.word	0x9200		! data read/write
 	.word	0x00C0		! granularity=4096, 386
-
+!  设置 IDT 寄存器, 中断描述符指向物理内存的 0x00000 处
 idt_48:
 	.word	0			! idt limit=0
 	.word	0,0			! idt base=0L
-
-gdt_48:
-	.word	0x800		! gdt limit=2048, 256 GDT entries
-	.word	512+gdt,0x9	! gdt base = 0X9xxxx
+! 全局描述符  GDT 寄存器
+gdt_48: 
+	.word	0x800		! gdt limit=2048, 256 GDT entries 段限长
+	.word	512+gdt,0x9	! gdt base = 0X9xxxx    0x9 和 512(0x200) 合并起来正好是 0x9200 -> 为当前段地址 ->当前段seg +gdt 刚好找到对应gdt的物理地址 
 	
 .text
 endtext:

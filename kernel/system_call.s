@@ -60,7 +60,7 @@ blocked = (33*16)   # 受阻塞信号位图的偏移量
 
 # 以下定义在sigaction结构中的偏移量。
 # offsets within sigaction
-sa_handler = 0              # 信号处理过程的句柄
+sa_handler = 0              # 信号处理过程的句柄(描述符)
 sa_mask = 4                 # 信号屏蔽码
 sa_flags = 8                # 信号集
 sa_restorer = 12            # 恢复函数指针
@@ -107,7 +107,7 @@ system_call:
 	mov %dx,%es
 # fs指向局部数据段(局部描述符表中数据段描述符)，即指向执行本次系统调用的用户程序的数据段。
 # 注意,在Linux 0.11 中内核给任务分配的代码和数据内存段是重叠的，他们的段基址和段限长相同。
-	movl $0x17,%edx		# fs points to local data space
+	movl $0x17,%edx		# fs points to local data space 
 	mov %dx,%fs
 # 下面这句操作数的含义是：调用地址=[_sys_call_table + %eax * 4]
 # sys_call_table[]是一个指针数组，定义在include/linux/sys.h中，该指针数组中设置了所有72
